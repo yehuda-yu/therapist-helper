@@ -7,38 +7,164 @@ from docxtpl import DocxTemplate
 import os
 
 # --- Gemini API Function (corrected argument for generate_content_stream) ---
+# --- Gemini API Function (Improved Prompt & Examples) ---
 def get_structured_data_from_gemini(api_key: str, user_input_text: str) -> dict:
     """
     Processes natural language patient info using Gemini API (google-genai SDK)
-    and returns structured data. Uses the client.models.generate_content_stream method.
+    and returns structured data. Aims for comprehensive extraction for a detailed template.
     """
     client = genai.Client(api_key=api_key)
 
-    model_name = "gemini-2.5-flash-preview-05-20" # As per your specification
+    # Using the model name from your latest snippet
+    model_name = "gemini-2.5-pro-preview-05-20"
 
+    # This list should contain ALL placeholders used in your patient_template.docx
+    all_template_keys = [
+        "name", "age", "kupat_cholim", "symptoms", "ai_recommondation",
+        "referring_person_details", "referral_reason_source_and_quote",
+        "initial_patient_complaint", "meeting_location", "other_participants",
+        "patient_story_details", "bio_psycho_social_background",
+        "significant_life_events", "coping_mechanisms_strengths_weaknesses",
+        "past_present_treatments", "treatment_expectations",
+        "objective_patient_description", "reports_from_other_systems",
+        "questionnaire_results", "holocaust_survivor_status",
+        "violence_abuse_screening_details", "rights_utilization_mapping",
+        "medical_poa_guardianship_status", "other_objective_information",
+        "functional_assessment_details", "problem_list_sw_impression",
+        "identified_resources", "inhibiting_factors", "overall_assessment_summary",
+        "treatment_plan_details", "additional_vital_information_for_plan",
+        "patient_family_guidance_plan", "rights_accessibility_plan_details",
+        "follow_up_referral_mediation_plan", "duty_to_report_plan",
+        "treatment_contract_registration_notes", "no_further_intervention_justification",
+        "gender", "marital_status", "summary_bps_assessment_brief",
+        "summary_treatment_goals_brief", "summary_intervention_plan_recommendations"
+    ]
+
+    # --- Enhanced Few-Shot Examples ---
     contents = [
+        # Example 1: More detailed input and output
         genai_types.Content(
             role="user",
             parts=[
-                # Example of user input (already in Hebrew, good)
-                genai_types.Part.from_text(text="""היי אני ידידיה זהו דוגמא בלבד, כשממיר את הקוד לפונקציה תשאיר את זה עם משתנה, ככה זה יימשך מתוך הצד לקוח
-
-ידידיה בן 40 חולה"""),
+                genai_types.Part.from_text(text="""מפגש ראשוני עם שרה כהן (שם בדוי), בת 45, נשואה + 3. הופנתה ע"י רופא משפחה ד"ר לוי ממרפאת 'השלום' עקב תחושות דכדוך וחרדה מזה כחצי שנה, מאז שפוטרה מעבודתה כגרפיקאית. קופ"ח: מכבי. מתארת קשיי שינה, חוסר תיאבון וירידה בחשק לעשות דברים שאהבה. בעבר טופלה פסיכולוגית למשך שנה סביב גיל 30 עקב משבר אישי. מצפה מהטיפול לקבל כלים להתמודדות ולהרגיש טוב יותר עם עצמה. הפגישה התקיימה בקליניקה."""),
             ],
         ),
         genai_types.Content(
             role="model",
             parts=[
-                # Example of model output (values in Hebrew, keys in English, good)
-                genai_types.Part.from_text(text="""{
-  "name": "ידידיה",
-  "age": "40",
-  "kupat_cholim": "",
-  "symptoms": "חולה",
-  "ai_recommondation": ""
-}"""),
+                genai_types.Part.from_text(text=json.dumps({
+                    "name": "שרה כהן (שם בדוי)",
+                    "age": "45",
+                    "gender": "נקבה", # Inferred
+                    "marital_status": "נשואה + 3",
+                    "kupat_cholim": "מכבי",
+                    "symptoms": "תחושות דכדוך וחרדה, קשיי שינה, חוסר תיאבון, ירידה בחשק",
+                    "referring_person_details": "רופא משפחה ד\"ר לוי, מרפאת 'השלום'",
+                    "referral_reason_source_and_quote": "הופנתה עקב תחושות דכדוך וחרדה",
+                    "initial_patient_complaint": "תחושות דכדוך וחרדה",
+                    "meeting_location": "קליניקה",
+                    "other_participants": "", # Assuming only Sarah and therapist
+                    "patient_story_details": "מזה כחצי שנה, מאז שפוטרה מעבודתה כגרפיקאית. מתארת קשיי שינה, חוסר תיאבון וירידה בחשק לעשות דברים שאהבה.",
+                    "bio_psycho_social_background": "פוטרה מעבודתה כגרפיקאית לפני כחצי שנה. נשואה עם שלושה ילדים.",
+                    "significant_life_events": "פיטורין מעבודה (לאחרונה), משבר אישי (סביב גיל 30)",
+                    "coping_mechanisms_strengths_weaknesses": "", # Not detailed in this input
+                    "past_present_treatments": "טופלה פסיכולוגית למשך שנה סביב גיל 30",
+                    "treatment_expectations": "לקבל כלים להתמודדות ולהרגיש טוב יותר עם עצמה",
+                    "objective_patient_description": "", # Requires therapist's observation
+                    "reports_from_other_systems": "",
+                    "questionnaire_results": "",
+                    "holocaust_survivor_status": "",
+                    "violence_abuse_screening_details": "",
+                    "rights_utilization_mapping": "",
+                    "medical_poa_guardianship_status": "",
+                    "other_objective_information": "",
+                    "functional_assessment_details": "ירידה בתפקוד עקב קשיי שינה, חוסר תיאבון וירידה בחשק.",
+                    "problem_list_sw_impression": "דכדוך וחרדה על רקע אובדן תעסוקתי, ירידה בתפקוד.",
+                    "identified_resources": "פנתה לטיפול, תמיכה משפחתית (נשואה +3)",
+                    "inhibiting_factors": "",
+                    "overall_assessment_summary": "",
+                    "treatment_plan_details": "",
+                    "additional_vital_information_for_plan": "",
+                    "patient_family_guidance_plan": "",
+                    "rights_accessibility_plan_details": "",
+                    "follow_up_referral_mediation_plan": "",
+                    "duty_to_report_plan": "",
+                    "treatment_contract_registration_notes": "",
+                    "no_further_intervention_justification": "",
+                    "summary_bps_assessment_brief": "",
+                    "summary_treatment_goals_brief": "",
+                    "summary_intervention_plan_recommendations": "",
+                    "ai_recommondation": "הפיטורין נראים כגורם מרכזי למצב הנוכחי. יש מקום לבחון אסטרטגיות התמודדות עם אובדן ושינוי תעסוקתי."
+                }, ensure_ascii=False)), # ensure_ascii=False for Hebrew in JSON string
             ],
         ),
+        # Example 2: Simpler input, focusing on different fields, some missing
+        genai_types.Content(
+            role="user",
+            parts=[
+                genai_types.Part.from_text(text="""דני, בן 28, הגיע לפגישה ביוזמתו. סטודנט. מתאר קושי בריכוז בלימודים לאחרונה ותחושת 'תקיעות'. לא מקבל טיפול תרופתי. חבר בקופ"ח לאומית. רוצה להבין מה עובר עליו."""),
+            ],
+        ),
+        genai_types.Content(
+            role="model",
+            parts=[
+                genai_types.Part.from_text(text=json.dumps({
+                    "name": "דני",
+                    "age": "28",
+                    "gender": "זכר", # Inferred
+                    "marital_status": "", # Not mentioned
+                    "kupat_cholim": "לאומית",
+                    "symptoms": "קושי בריכוז בלימודים, תחושת 'תקיעות'",
+                    "referring_person_details": "פניה עצמית",
+                    "referral_reason_source_and_quote": "פניה עצמית",
+                    "initial_patient_complaint": "קושי בריכוז בלימודים ותחושת 'תקיעות'",
+                    "meeting_location": "", # Not mentioned
+                    "other_participants": "",
+                    "patient_story_details": "סטודנט. מתאר קושי בריכוז בלימודים לאחרונה ותחושת 'תקיעות'.",
+                    "bio_psycho_social_background": "סטודנט.",
+                    "significant_life_events": "",
+                    "coping_mechanisms_strengths_weaknesses": "",
+                    "past_present_treatments": "לא מקבל טיפול תרופתי.",
+                    "treatment_expectations": "רוצה להבין מה עובר עליו.",
+                    "objective_patient_description": "",
+                    "reports_from_other_systems": "",
+                    "questionnaire_results": "",
+                    "holocaust_survivor_status": "",
+                    "violence_abuse_screening_details": "",
+                    "rights_utilization_mapping": "",
+                    "medical_poa_guardianship_status": "",
+                    "other_objective_information": "",
+                    "functional_assessment_details": "קושי בריכוז בלימודים.",
+                    "problem_list_sw_impression": "קשיי ריכוז, תחושת תקיעות.",
+                    "identified_resources": "פנה לטיפול באופן יזום.",
+                    "inhibiting_factors": "",
+                    "overall_assessment_summary": "",
+                    "treatment_plan_details": "",
+                    "additional_vital_information_for_plan": "",
+                    "patient_family_guidance_plan": "",
+                    "rights_accessibility_plan_details": "",
+                    "follow_up_referral_mediation_plan": "",
+                    "duty_to_report_plan": "",
+                    "treatment_contract_registration_notes": "",
+                    "no_further_intervention_justification": "",
+                    "summary_bps_assessment_brief": "",
+                    "summary_treatment_goals_brief": "",
+                    "summary_intervention_plan_recommendations": "",
+                    "ai_recommondation": "יתכן שכדאי לבחון גורמים אפשריים לקשיי הריכוז, כגון עומס לימודי או גורמים רגשיים."
+                }, ensure_ascii=False)),
+            ],
+        ),
+        # Original simple example (can be kept or removed if the above are sufficient)
+        # genai_types.Content(
+        #     role="user",
+        #     parts=[genai_types.Part.from_text(text="ידידיה בן 40 חולה")],
+        # ),
+        # genai_types.Content(
+        #     role="model",
+        #     parts=[
+        #         genai_types.Part.from_text(text=json.dumps({key: ("ידידיה" if key == "name" else "40" if key == "age" else "חולה" if key == "symptoms" else "") for key in all_template_keys}, ensure_ascii=False)),
+        #     ],
+        # ),
         genai_types.Content(
             role="user",
             parts=[
@@ -47,32 +173,41 @@ def get_structured_data_from_gemini(api_key: str, user_input_text: str) -> dict:
         ),
     ]
 
-    # System prompt remains in English as it defines JSON structure with English keys
-    # which the Python code and DocxTemplate rely on.
-    # The example "kupat_cholim: like מכבי or כללית etc" already has Hebrew examples.
+    # --- Enhanced System Prompt ---
+    system_prompt_text = f"""
+You are an expert AI assistant for emotional therapists. Your primary function is to meticulously analyze unstructured Hebrew text, which represents a therapist's notes from a patient session, and extract relevant information into a structured JSON object.
+
+Key Instructions:
+1.  **Input Text**: The user will provide session notes in Hebrew.
+2.  **Output Format**: You MUST return a single, valid JSON object.
+3.  **JSON Keys**: The keys in the JSON object MUST be in English, as specified in the examples and the comprehensive list of target fields. The complete list of possible English keys is: {', '.join(all_template_keys)}.
+4.  **JSON Values**: The values associated with these keys should be in Hebrew, extracted or inferred from the input text.
+5.  **Comprehensive Extraction**: Attempt to extract information for ALL the fields from the provided list.
+6.  **Handling Missing Information**: If specific information for a field is not present in the input text, you MUST include the key in the JSON output with an empty string ("") as its value. DO NOT omit any key from the full list.
+7.  **Accuracy and Conciseness**: Prioritize accuracy. Extract information as verbatim as possible. If summarization is needed for a field (e.g., `patient_story_details` from a long narrative), be concise yet comprehensive. For fields like `symptoms`, list them clearly.
+8.  **`name` Field**: If a full name is provided, use it. If only a first name, use that. If a pseudonym is indicated (e.g., "שם בדוי"), include that indication.
+9.  **`gender` Field**: Infer gender (זכר/נקבה) from names or context if possible. If not clear, leave as an empty string.
+10. **`ai_recommondation` Field**: This field is for a brief, high-level, non-clinical observation, a potential area for future exploration, or a general summary statement based on the input. It should be very concise (1-2 sentences). If nothing seems appropriate, use an empty string. Avoid giving direct medical or therapeutic advice.
+11. **Contextual Understanding**: Pay attention to the context to correctly assign information to fields like `bio_psycho_social_background` (e.g., family, work, social situation) vs. `significant_life_events` (e.g., specific crises, traumas, major changes).
+
+Analyze the user's input carefully and populate the JSON with all specified keys.
+"""
+
     generate_content_config_object = genai_types.GenerateContentConfig(
-        temperature=0,
-        thinking_config=genai_types.ThinkingConfig(
-            thinking_budget=0,
-        ),
+        temperature=0.25, # Slightly higher for Pro model, allows a bit more nuance but still factual
+        # top_p=0.95, # Consider if needed
+        # top_k=40,   # Consider if needed
         response_mime_type="application/json",
         system_instruction=[
-            genai_types.Part.from_text(text="""system prompt here
-this is the system prompt. act as a patient info analuzer
-analyze the attached user input, and return a json with the relevant fields. always return the fierlds. if the fiels is empty, just retirn it empty.
-
-json:
-name
-age
-kupat_cholim: like מכבי or כללית etc
-symptoms
-ai_recommondation:
-
-here is the user input:"""),
+            genai_types.Part.from_text(text=system_prompt_text),
         ],
     )
 
     full_response_text = ""
+    processed_data = {key: "" for key in all_template_keys} # Initialize with all keys
+    processed_data["error"] = ""
+    processed_data["details"] = ""
+
     try:
         stream = client.models.generate_content_stream(
             model=model_name,
@@ -84,25 +219,54 @@ here is the user input:"""),
                  full_response_text += chunk.text
         
         if not full_response_text.strip():
-            raise ValueError("Received empty response from Gemini API.") # Internal error, can remain English or be translated
+            raise ValueError("התקבלה תגובה ריקה מ-Gemini API.")
 
-        data = json.loads(full_response_text)
+        gemini_extracted_data = json.loads(full_response_text)
+
+        for key in all_template_keys:
+            if key in gemini_extracted_data:
+                # Ensure value is string, especially for numbers like age
+                processed_data[key] = str(gemini_extracted_data[key]) if gemini_extracted_data[key] is not None else ""
         
-        expected_keys = ["name", "age", "kupat_cholim", "symptoms", "ai_recommondation"]
-        for key in expected_keys:
-            if key not in data:
-                data[key] = ""
-            elif key == "age" and data.get(key) is not None: 
-                data[key] = str(data[key])
-            elif key == "age" and data.get(key) is None:
-                 data[key] = ""
+        # Explicitly ensure age is a string, even if it was an int in JSON
+        if processed_data.get("age") is not None:
+            processed_data["age"] = str(processed_data["age"])
+        else:
+             processed_data["age"] = ""
 
-        if "age" in data and data["age"] is not None:
-            data["age"] = str(data["age"])
-        elif "age" not in data or data.get("age") is None:
-            data["age"] = ""
 
-        return data
+        return processed_data
+
+    except json.JSONDecodeError as e:
+        error_msg = f"שגיאת פיענוח JSON: {e}. תגובת Gemini: '{full_response_text}'"
+        st.error(error_msg)
+        processed_data["error"] = "כשל בפענוח JSON מ-Gemini"
+        processed_data["details"] = error_msg
+        # Ensure all keys are still present in the returned dict on error
+        for key_to_ensure in all_template_keys:
+            if key_to_ensure not in processed_data:
+                processed_data[key_to_ensure] = ""
+        return processed_data
+    except ValueError as e:
+        error_msg = f"שגיאת ערך: {e}. תגובת Gemini: '{full_response_text}'"
+        st.error(error_msg)
+        processed_data["error"] = "נתונים לא תקינים מ-Gemini (תגובה ריקה או ערך שגוי)"
+        processed_data["details"] = error_msg
+        for key_to_ensure in all_template_keys:
+            if key_to_ensure not in processed_data:
+                processed_data[key_to_ensure] = ""
+        return processed_data
+    except Exception as e:
+        error_msg = f"שגיאה בקריאה ל-Gemini API: {type(e).__name__} - {e}. מודל: {model_name}."
+        st.error(error_msg)
+        if hasattr(e, 'response') and e.response:
+            st.error(f"פרטי תגובת API: {e.response}")
+        processed_data["error"] = "הקריאה ל-Gemini API נכשלה"
+        processed_data["details"] = error_msg
+        for key_to_ensure in all_template_keys:
+            if key_to_ensure not in processed_data:
+                processed_data[key_to_ensure] = ""
+        return processed_data
 
     except json.JSONDecodeError as e:
         error_msg = f"שגיאת פיענוח JSON: {e}. תגובת Gemini: '{full_response_text}'"
