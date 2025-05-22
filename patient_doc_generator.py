@@ -322,7 +322,58 @@ def check_password():
 # --- Main App ---
 def main():
     st.set_page_config(page_title="מחולל מסמכי מטופלים", layout="wide")
-    st.markdown("<div dir='rtl' style='text-align: right;'>", unsafe_allow_html=True)
+
+    # --- Inject CSS for RTL text alignment ---
+    st.markdown("""
+        <style>
+            /* Set base direction for the whole page */
+            body {
+                direction: rtl !important;
+            }
+
+            /* Apply text-align: right to common Streamlit elements and containers */
+            .stApp,
+            .stApp header, /* Streamlit's header bar */
+            .main, /* Main content area */
+            section[data-testid="st.main"], /* Another way to target main area */
+            .stMarkdown, .stMarkdown p, .stMarkdown div, .stMarkdown li, /* Content from st.markdown */
+            .stAlert, /* Covers st.error, st.warning, st.info, st.success */
+            .stButton > button, /* Text inside st.button */
+            .stDownloadButton > button, /* Text inside st.download_button */
+            .stSpinner > div, /* Text inside st.spinner */
+            .stTextInput > label, /* Label for text input */
+            .stTextArea > label, /* Label for text area */
+            h1, h2, h3, h4, h5, h6, p, div, span, label, li /* General HTML tags if not covered above */
+            {
+                text-align: right !important;
+            }
+
+            /* Ensure input fields themselves also align their internal text (placeholder, typed text) */
+            .stTextInput input, 
+            .stTextArea textarea {
+                text-align: right !important;
+                direction: rtl !important; /* Reinforce direction for typing */
+            }
+            
+            /* Specific for title and subheader if they are not inheriting properly */
+            h1[data-testid="stHeading"], h2[data-testid="stHeading"], h3[data-testid="stHeading"] {
+                text-align: right !important;
+            }
+
+            /* For password input in check_password, ensure its label is also aligned */
+            /* This might be covered by general label, but being specific can help */
+            div[data-testid="stForm"] .stTextInput > label {
+                 text-align: right !important;
+            }
+
+        </style>
+    """, unsafe_allow_html=True)
+    # --- End of CSS Injection ---
+
+    # The st.markdown("<div dir='rtl' ...>") wrapper is no longer strictly necessary
+    # around the whole main app if the CSS above is effective.
+    # However, for components like st.json (which you've removed) or complex custom HTML,
+    # explicit divs can still be useful. For now, relying on CSS.
 
     st.title("📝 מחולל מסמכי מטופלים")
 
