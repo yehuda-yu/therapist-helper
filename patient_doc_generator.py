@@ -205,14 +205,62 @@ def main():
 
             try:
                 doc = DocxTemplate(template_file)
-                # Context keys remain in English as they map to template placeholders {{name}}, {{age}} etc.
-                # and to the JSON keys from Gemini.
+                # EXPANDED CONTEXT - ensure all placeholders from DOCX are here
                 context = {
                     "name": structured_data.get("name", ""),
-                    "age": str(structured_data.get("age", "")), 
+                    "age": str(structured_data.get("age", "")), # Ensure age is string
                     "kupat_cholim": structured_data.get("kupat_cholim", ""),
                     "symptoms": structured_data.get("symptoms", ""),
-                    "ai_recommondation": structured_data.get("ai_recommondation", "")
+                    "ai_recommondation": structured_data.get("ai_recommondation", ""),
+            
+                    # Placeholders from INTRODUCTION / SETTING
+                    "referring_person_details": structured_data.get("referring_person_details", ""), # New - AI might not provide yet
+                    "referral_reason_source_and_quote": structured_data.get("referral_reason_source_and_quote", ""), # New
+                    "initial_patient_complaint": structured_data.get("initial_patient_complaint", ""), # New
+                    "meeting_location": structured_data.get("meeting_location", ""), # New
+                    "other_participants": structured_data.get("other_participants", ""), # New
+            
+                    # Placeholders from S - SUBJECTIVE
+                    "patient_story_details": structured_data.get("patient_story_details", ""), # New
+                    "bio_psycho_social_background": structured_data.get("bio_psycho_social_background", ""), # New
+                    "significant_life_events": structured_data.get("significant_life_events", ""), # New
+                    "coping_mechanisms_strengths_weaknesses": structured_data.get("coping_mechanisms_strengths_weaknesses", ""), # New
+                    "past_present_treatments": structured_data.get("past_present_treatments", ""), # New
+                    "treatment_expectations": structured_data.get("treatment_expectations", ""), # New
+            
+                    # Placeholders from O - OBJECTIVE & OBSERVATIONS
+                    "objective_patient_description": structured_data.get("objective_patient_description", ""), # New
+                    "reports_from_other_systems": structured_data.get("reports_from_other_systems", ""), # New
+                    "questionnaire_results": structured_data.get("questionnaire_results", ""), # New
+                    "holocaust_survivor_status": structured_data.get("holocaust_survivor_status", ""), # New
+                    "violence_abuse_screening_details": structured_data.get("violence_abuse_screening_details", ""), # New
+                    "rights_utilization_mapping": structured_data.get("rights_utilization_mapping", ""), # New
+                    "medical_poa_guardianship_status": structured_data.get("medical_poa_guardianship_status", ""), # New
+                    "other_objective_information": structured_data.get("other_objective_information", ""), # New
+            
+                    # Placeholders from A - ASSESSMENT
+                    "functional_assessment_details": structured_data.get("functional_assessment_details", ""), # New
+                    "problem_list_sw_impression": structured_data.get("problem_list_sw_impression", ""), # New
+                    "identified_resources": structured_data.get("identified_resources", ""), # New
+                    "inhibiting_factors": structured_data.get("inhibiting_factors", ""), # New
+                    "overall_assessment_summary": structured_data.get("overall_assessment_summary", ""), # New
+            
+                    # Placeholders from P - PLAN
+                    "treatment_plan_details": structured_data.get("treatment_plan_details", ""), # New
+                    "additional_vital_information_for_plan": structured_data.get("additional_vital_information_for_plan", ""), # New
+                    "patient_family_guidance_plan": structured_data.get("patient_family_guidance_plan", ""), # New
+                    "rights_accessibility_plan_details": structured_data.get("rights_accessibility_plan_details", ""), # New
+                    "follow_up_referral_mediation_plan": structured_data.get("follow_up_referral_mediation_plan", ""), # New
+                    "duty_to_report_plan": structured_data.get("duty_to_report_plan", ""), # New
+                    "treatment_contract_registration_notes": structured_data.get("treatment_contract_registration_notes", ""), # New
+                    "no_further_intervention_justification": structured_data.get("no_further_intervention_justification", ""), # New
+            
+                    # Placeholders from S - SUMMARY (Final)
+                    "gender": structured_data.get("gender", ""), # New
+                    "marital_status": structured_data.get("marital_status", ""), # New
+                    "summary_bps_assessment_brief": structured_data.get("summary_bps_assessment_brief", ""), # New
+                    "summary_treatment_goals_brief": structured_data.get("summary_treatment_goals_brief", ""), # New
+                    "summary_intervention_plan_recommendations": structured_data.get("summary_intervention_plan_recommendations", "") # New
                 }
                 doc.render(context)
 
