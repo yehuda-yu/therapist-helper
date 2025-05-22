@@ -1,0 +1,243 @@
+import streamlit as st
+from google import genai
+from google.genai import types as genai_types
+import json
+from io import BytesIO
+from docxtpl import DocxTemplate
+import os
+
+# --- Gemini API Function (corrected argument for generate_content_stream) ---
+def get_structured_data_from_gemini(api_key: str, user_input_text: str) -> dict:
+    """
+    Processes natural language patient info using Gemini API (google-genai SDK)
+    and returns structured data. Uses the client.models.generate_content_stream method.
+    """
+    client = genai.Client(api_key=api_key)
+
+    model_name = "gemini-2.5-flash-preview-05-20" # As per your specification
+
+    contents = [
+        genai_types.Content(
+            role="user",
+            parts=[
+                # Example of user input (already in Hebrew, good)
+                genai_types.Part.from_text(text="""היי אני ידידיה זהו דוגמא בלבד, כשממיר את הקוד לפונקציה תשאיר את זה עם משתנה, ככה זה יימשך מתוך הצד לקוח
+
+ידידיה בן 40 חולה"""),
+            ],
+        ),
+        genai_types.Content(
+            role="model",
+            parts=[
+                # Example of model output (values in Hebrew, keys in English, good)
+                genai_types.Part.from_text(text="""{
+  "name": "ידידיה",
+  "age": "40",
+  "kupat_cholim": "",
+  "symptoms": "חולה",
+  "ai_recommondation": ""
+}"""),
+            ],
+        ),
+        genai_types.Content(
+            role="user",
+            parts=[
+                genai_types.Part.from_text(text=user_input_text),
+            ],
+        ),
+    ]
+
+    # System prompt remains in English as it defines JSON structure with English keys
+    # which the Python code and DocxTemplate rely on.
+    # The example "kupat_cholim: like מכבי or כללית etc" already has Hebrew examples.
+    generate_content_config_object = genai_types.GenerateContentConfig(
+        temperature=0,
+        thinking_config=genai_types.ThinkingConfig(
+            thinking_budget=0,
+        ),
+        response_mime_type="application/json",
+        system_instruction=[
+            genai_types.Part.from_text(text="""system prompt here
+this is the system prompt. act as a patient info analuzer
+analyze the attached user input, and return a json with the relevant fields. always return the fierlds. if the fiels is empty, just retirn it empty.
+
+json:
+name
+age
+kupat_cholim: like מכבי or כללית etc
+symptoms
+ai_recommondation:
+
+here is the user input:"""),
+        ],
+    )
+
+    full_response_text = ""
+    try:
+        stream = client.models.generate_content_stream(
+            model=model_name,
+            contents=contents,
+            config=generate_content_config_object,
+        )
+        for chunk in stream:
+            if chunk.text:
+                 full_response_text += chunk.text
+        
+        if not full_response_text.strip():
+            raise ValueError("Received empty response from Gemini API.") # Internal error, can remain English or be translated
+
+        data = json.loads(full_response_text)
+        
+        expected_keys = ["name", "age", "kupat_cholim", "symptoms", "ai_recommondation"]
+        for key in expected_keys:
+            if key not in data:
+                data[key] = ""
+            elif key == "age" and data.get(key) is not None: 
+                data[key] = str(data[key])
+            elif key == "age" and data.get(key) is None:
+                 data[key] = ""
+
+        if "age" in data and data["age"] is not None:
+            data["age"] = str(data["age"])
+        elif "age" not in data or data.get("age") is None:
+            data["age"] = ""
+
+        return data
+
+    except json.JSONDecodeError as e:
+        error_msg = f"שגיאת פיענוח JSON: {e}. תגובת Gemini: '{full_response_text}'"
+        st.error(error_msg)
+        return {"error": "כשל בפענוח JSON מ-Gemini", "details": error_msg, "name": "", "age": "", "kupat_cholim": "", "symptoms": "", "ai_recommondation": ""}
+    except ValueError as e:
+        # This specific ValueError is for empty response, can be more user-friendly
+        if "Received empty response from Gemini API." in str(e):
+            error_msg = f"שגיאת ערך: התקבלה תגובה ריקה מ-Gemini API. תגובת Gemini: '{full_response_text}'"
+            details_msg = "ה-API של Gemini החזיר תגובה ריקה. ייתכן שיש בעיה בתקשורת או שהקלט לא עובד כראוי."
+        else:
+            error_msg = f"שגיאת ערך: {e}. תגובת Gemini: '{full_response_text}'"
+            details_msg = error_msg
+        st.error(error_msg)
+        return {"error": "נתונים לא תקינים מ-Gemini", "details": details_msg, "name": "", "age": "", "kupat_cholim": "", "symptoms": "", "ai_recommondation": ""}
+    except Exception as e:
+        error_msg = f"שגיאה בקריאה ל-Gemini API: {type(e).__name__} - {e}. מודל: {model_name}."
+        st.error(error_msg)
+        if hasattr(e, 'response') and e.response: 
+            st.error(f"פרטי תגובת API: {e.response}")
+        return {"error": "הקריאה ל-Gemini API נכשלה", "details": error_msg, "name": "", "age": "", "kupat_cholim": "", "symptoms": "", "ai_recommondation": ""}
+
+
+# --- Password Protection ---
+def check_password():
+    if "APP_PASSWORD" not in st.secrets:
+        st.error("שגיאה קריטית: APP_PASSWORD אינו מוגדר בקבצי הסודות של Streamlit (.streamlit/secrets.toml).")
+        st.stop()
+        return False
+
+    app_password = st.secrets["APP_PASSWORD"]
+
+    if "password_correct" not in st.session_state:
+        st.session_state.password_correct = False
+
+    if st.session_state.password_correct:
+        return True
+
+    st.markdown("<div dir='rtl'>", unsafe_allow_html=True) # Ensure RTL for password section
+    password_input = st.text_input("הזן סיסמה כדי לגשת לאפליקציה:", type="password", key="password_field")
+
+    if st.button("התחבר", key="login_button"):
+        if password_input == app_password:
+            st.session_state.password_correct = True
+            st.markdown("</div>", unsafe_allow_html=True) # Close RTL div
+            st.rerun()
+        else:
+            st.error("הסיסמה שגויה.")
+            st.session_state.password_correct = False
+    st.markdown("</div>", unsafe_allow_html=True) # Close RTL div if button not pressed or after error
+    return False
+
+# --- Main App ---
+def main():
+    st.set_page_config(page_title="מחולל מסמכי מטופלים", layout="wide")
+    # Wrap the main content in a div with dir="rtl" for Hebrew
+    st.markdown("<div dir='rtl' style='text-align: right;'>", unsafe_allow_html=True)
+
+    st.title("📝 מחולל מסמכי מטופלים")
+
+    if not check_password():
+        st.markdown("</div>", unsafe_allow_html=True) # Close RTL div if password check fails
+        st.stop()
+
+    try:
+        gemini_api_key = st.secrets["GEMINI_API_KEY"]
+    except KeyError:
+        st.error("GEMINI_API_KEY לא נמצא בקבצי הסודות של Streamlit. אנא הגדר אותו ב- .streamlit/secrets.toml")
+        st.markdown("</div>", unsafe_allow_html=True) # Close RTL div
+        st.stop()
+        return
+
+    st.subheader("1. הזן פרטי מטופל (בשפה חופשית)")
+    patient_info_natural = st.text_area("תאר את פרטי המטופל, תסמינים, היסטוריה וכו':", height=200, key="patient_input_area")
+
+    model_name_for_display = "gemini-2.5-flash-preview-05-20"
+
+
+    if st.button("✨ הפק נתונים מובנים ומסמך", key="generate_button"):
+        if not patient_info_natural.strip():
+            st.warning("אנא הזן מידע כלשהו על המטופל.")
+            st.stop()
+
+        with st.spinner(f"מעבד באמצעות בינה מלאכותית של Gemini (מודל: {model_name_for_display})..."):
+            structured_data = get_structured_data_from_gemini(gemini_api_key, patient_info_natural)
+
+        if structured_data and "error" not in structured_data:
+            st.subheader("2. נתוני מטופל מובנים (מ-Gemini)")
+            # st.json might not respect RTL fully for its internal layout, but content will be Hebrew.
+            # For better control, one might need to iterate and display with st.write or st.markdown.
+            st.json(structured_data) 
+
+            st.subheader("3. הפק והורד קובץ DOCX")
+            template_file = "patient_template.docx" # This filename should remain as is or be configurable
+
+            if not os.path.exists(template_file):
+                st.error(f"שגיאה: קובץ התבנית DOCX '{template_file}' לא נמצא.")
+                st.info(f"אנא צור קובץ '{template_file}' באותה תיקייה של הסקריפט. השתמש במצייני מקום כמו {{{{name}}}}, {{{{age}}}} וכו' (אלו צריכים להיות באנגלית כפי שהם מוגדרים בקוד).")
+                st.stop()
+
+            try:
+                doc = DocxTemplate(template_file)
+                # Context keys remain in English as they map to template placeholders {{name}}, {{age}} etc.
+                # and to the JSON keys from Gemini.
+                context = {
+                    "name": structured_data.get("name", ""),
+                    "age": str(structured_data.get("age", "")), 
+                    "kupat_cholim": structured_data.get("kupat_cholim", ""),
+                    "symptoms": structured_data.get("symptoms", ""),
+                    "ai_recommondation": structured_data.get("ai_recommondation", "")
+                }
+                doc.render(context)
+
+                bio = BytesIO()
+                doc.save(bio)
+                bio.seek(0)
+
+                # Filename can contain Hebrew characters if 'name' is in Hebrew.
+                doc_filename = f"{str(context.get('name', 'מטופל')).replace(' ', '_')}_document.docx"
+                st.download_button(
+                    label="📥 הורד מסמך מטופל (DOCX)",
+                    data=bio,
+                    file_name=doc_filename,
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+            except Exception as e:
+                st.error(f"שגיאה ביצירת קובץ DOCX: {e}")
+                st.error(f"נתונים ששימשו לתבנית: {context}") # Context will show Hebrew values
+
+        elif structured_data and "error" in structured_data:
+            st.error(f"לא ניתן היה לעבד את הנתונים: {structured_data.get('details', 'שגיאה לא ידועה')}")
+        else:
+            st.error("אירעה שגיאה בלתי צפויה בעת שליפת נתונים מ-Gemini.")
+    
+    st.markdown("</div>", unsafe_allow_html=True) # Close the main RTL div
+
+if __name__ == "__main__":
+    main()
