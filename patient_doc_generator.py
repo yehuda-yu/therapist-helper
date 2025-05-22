@@ -16,7 +16,7 @@ def get_structured_data_from_gemini(api_key: str, user_input_text: str) -> dict:
     client = genai.Client(api_key=api_key)
 
     # Using the model name from your latest snippet
-    model_name = "gemini-2.5-pro-preview-05-06"
+    model_name = "Gemini 2.5 Flash Preview 05-20"
 
     # This list should contain ALL placeholders used in your patient_template.docx
     all_template_keys = [
