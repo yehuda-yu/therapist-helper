@@ -163,6 +163,7 @@ def check_password():
 def main():
     st.set_page_config(
         page_title="מחולל סיכומי פגישות",
+        page_icon="🧠",
         layout="wide",
         initial_sidebar_state="collapsed"
     )
@@ -505,6 +506,27 @@ def main():
             except Exception as e:
                 st.error(f"❌ שגיאה ביצירת קובץ DOCX: {e}")
                 st.error(f"הטקסט שנוסה להטמיע בתבנית: {narrative_summary[:200]}...")
+
+            st.markdown("""
+        <div class="footer">
+            <p style="margin-bottom: 1rem; font-size: 1.2rem;">
+                💚 פותח על ידי יהודה יונגשטיין עבור אנשי מקצוע בתחום הטיפול
+            </p>
+            <div>
+                <a href="mailto:your-yehudayu@gmail.com" target="_blank">
+                    <span class="footer-icons">✉️</span> your-email@example.com
+                </a>
+                <span class="divider">|</span>
+                <a href="www.linkedin.com/in/yehuda-yungstein" target="_blank">
+                    <span class="footer-icons">💼</span> LinkedIn
+                </a>
+            </div>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+                © 2025 | נבנה עם -Streamlit
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
 
 if __name__ == "__main__":
     main()
