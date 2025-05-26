@@ -405,33 +405,38 @@ def main():
         <div class="step-card">
             <h3>
                 <span class="step-number">1</span>
-                הזן רשימות מהפגישה
+                הזיני רשימות מהפגישה
             </h3>
         </div>
     """, unsafe_allow_html=True)
     
-    session_notes_natural = st.text_area(
-        "תאר את פרטי הפגישה עם המטופל, נקודות עיקריות, התרשמויות והחלטות:",
+                session_notes_natural = st.text_area(
+        "תארי את פרטי הפגישה, נקודות עיקריות, התרשמויות והחלטות:",
         height=300,
         key="session_input_area",
-        placeholder="לדוגמה: פגישה עם א.ב., דיברנו על החרדות שלו מהעבודה החדשה..."
+        placeholder="לדוגמה: פגישה עם א.ב., דיברנו על החרדות מהעבודה החדשה..."
     )
 
     model_name_for_display = "Gemini 1.5 Pro"
 
-    # כפתור יצירת סיכום
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # כפתור יצירת סיכום וכפתור איפוס
+    col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
     with col2:
-        if st.button("✨ הפק סיכום פגישה", key="generate_button", use_container_width=True):
+        generate_clicked = st.button("✨ הפיקי סיכום פגישה", key="generate_button", use_container_width=True)
+    with col3:
+        if st.button("🔄 איפוס", key="reset_button", use_container_width=True):
+            st.rerun()
+    
+    if generate_clicked:
             if not session_notes_natural.strip():
-                st.warning("⚠️ אנא הזן רשימות כלשהן מהפגישה.")
+                st.warning("⚠️ אנא הזיני רשימות כלשהן מהפגישה.")
                 st.stop()
 
-            with st.spinner(f"🔄 מעבד את הרשימות ומכין סיכום נרטיבי באמצעות {model_name_for_display}... אנא המתן."):
+            with st.spinner(f"🔄 מעבדת את הרשימות ומכינה סיכום נרטיבי באמצעות {model_name_for_display}... אנא המתיני."):
                 narrative_summary = get_narrative_summary_from_gemini(gemini_api_key, session_notes_natural)
 
             if not narrative_summary:
-                st.error("❌ לא הצלחנו ליצור סיכום. אנא נסה שוב או בדוק את הרשימות שהזנת.")
+                st.error("❌ לא הצלחנו ליצור סיכום. אנא נסי שוב או בדקי את הרשימות שהזנת.")
                 st.stop()
 
             # שלב 2 - הצגת הסיכום
@@ -464,7 +469,7 @@ def main():
 
             if not os.path.exists(template_file):
                 st.error(f"❌ שגיאה: קובץ התבנית DOCX '{template_file}' לא נמצא.")
-                st.info(f"💡 אנא צור קובץ '{template_file}' פשוט באותה תיקייה, לדוגמה עם כותרת ומציין מקום יחיד כמו {{{{narrative_summary}}}}.")
+                st.info(f"💡 אנא צרי קובץ '{template_file}' פשוט באותה תיקייה, לדוגמה עם כותרת ומציין מקום יחיד כמו {{{{narrative_summary}}}}.")
                 st.stop()
 
             try:
@@ -482,15 +487,18 @@ def main():
                 first_words = " ".join(session_notes_natural.split()[:3]).replace('"', '').replace("'", "")
                 doc_filename = f"סיכום_פגישה_{first_words.replace(' ', '_')}.docx" if first_words else "סיכום_פגישה.docx"
 
-                col1, col2, col3 = st.columns([1, 2, 1])
+                col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
                 with col2:
                     st.download_button(
-                        label="📥 הורד סיכום פגישה (DOCX)",
+                        label="📥 הורידי סיכום פגישה (DOCX)",
                         data=bio,
                         file_name=doc_filename,
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         use_container_width=True
                     )
+                with col3:
+                    if st.button("🔄 התחילי מחדש", key="new_session", use_container_width=True):
+                        st.rerun()
                 
                 st.success("✅ המסמך הופק בהצלחה ומוכן להורדה!")
 
