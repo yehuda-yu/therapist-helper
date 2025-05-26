@@ -506,18 +506,20 @@ def main():
             except Exception as e:
                 st.error(f"❌ שגיאה ביצירת קובץ DOCX: {e}")
                 st.error(f"הטקסט שנוסה להטמיע בתבנית: {narrative_summary[:200]}...")
+            
 
-            st.markdown("""
+    # פוטר עם פרטי קשר
+    st.markdown("""
         <div class="footer">
             <p style="margin-bottom: 1rem; font-size: 1.2rem;">
-                💚 פותח על ידי יהודה יונגשטיין עבור אנשי מקצוע בתחום הטיפול
+                פותח על ידי יהודה יונגשטיין עבור אנשי מקצוע בתחום הטיפול
             </p>
             <div>
-                <a href="mailto:your-yehudayu@gmail.com" target="_blank">
-                    <span class="footer-icons">✉️</span> your-email@example.com
+                <a href="mailto:yehudayu@gmail.com" target="_blank">
+                    <span class="footer-icons">✉️</span> yehudayu@gmail.com
                 </a>
                 <span class="divider">|</span>
-                <a href="www.linkedin.com/in/yehuda-yungstein" target="_blank">
+                <a href="https://www.linkedin.com/in/yehuda-yungstein" target="_blank">
                     <span class="footer-icons">💼</span> LinkedIn
                 </a>
             </div>
@@ -526,7 +528,8 @@ def main():
             </p>
         </div>
     """, unsafe_allow_html=True)
-    
+
+   
 
 if __name__ == "__main__":
     main()
