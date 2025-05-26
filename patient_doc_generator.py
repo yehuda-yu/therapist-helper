@@ -512,7 +512,7 @@ def main():
     st.markdown("""
         <div style="margin-top: 4rem; padding: 2rem; text-align: center;">
             <p style="font-size: 1.3rem; color: #4a5568; margin-bottom: 2rem;">
-                 פותח עבור אנשי מקצוע בתחום הטיפול
+                 פותח על ידי יהודה יונגשטיין עבור אנשי מקצוע בתחום הטיפול
             </p>
         </div>
     """, unsafe_allow_html=True)
