@@ -510,25 +510,51 @@ def main():
 
     # פוטר עם פרטי קשר
     st.markdown("""
-        <div class="footer">
-            <p style="margin-bottom: 1rem; font-size: 1.2rem;">
-                פותח על ידי יהודה יונגשטיין עבור אנשי מקצוע בתחום הטיפול
-            </p>
-            <div>
-                <a href="mailto:yehudayu@gmail.com" target="_blank">
-                    <span class="footer-icons">✉️</span> yehudayu@gmail.com
-                </a>
-                <span class="divider">|</span>
-                <a href="https://www.linkedin.com/in/yehuda-yungstein" target="_blank">
-                    <span class="footer-icons">💼</span> LinkedIn
-                </a>
-            </div>
-            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
-                © 2025 | נבנה עם -Streamlit
+        <div style="margin-top: 4rem; padding: 2rem; text-align: center;">
+            <p style="font-size: 1.3rem; color: #4a5568; margin-bottom: 2rem;">
+                 פותח עבור אנשי מקצוע בתחום הטיפול
             </p>
         </div>
     """, unsafe_allow_html=True)
-
+    
+    # איקונים של מייל ולינקדאין
+    col1, col2, col3 = st.columns([2, 1, 2])
+    with col2:
+        subcol1, subcol2 = st.columns(2, gap="small")
+        with subcol1:
+            # URL of the image
+            image_url = "https://img.icons8.com/small/256/new-post.png"
+            # Mail URL
+            mail_url = "mailto:yehudayu@gmail.com"
+            st.markdown(f"""
+                <div style="text-align: center;">
+                    <a href='{mail_url}' style="text-decoration: none;">
+                        <img src='{image_url}' width='50' height='50' style="transition: transform 0.3s ease; border-radius: 10px;">
+                    </a>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        with subcol2:
+            # URL of the image
+            image_url = "https://img.icons8.com/small/256/linkedin.png"
+            # LinkedIn URL
+            linkedin_url = "https://www.linkedin.com/in/yehuda-yungstein/"
+            st.markdown(f"""
+                <div style="text-align: center;">
+                    <a href='{linkedin_url}' target='_blank' style="text-decoration: none;">
+                        <img src='{image_url}' width='50' height='50' style="transition: transform 0.3s ease; border-radius: 10px;">
+                    </a>
+                </div>
+            """, unsafe_allow_html=True)
+    
+    # כותרת תחתונה
+    st.markdown("""
+        <div style="text-align: center; margin-top: 2rem; padding: 1rem;">
+            <p style="font-size: 0.9rem; color: #718096;">
+                © 2024 | נבנה עם -Streamlit
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
    
 
 if __name__ == "__main__":
