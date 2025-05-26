@@ -162,17 +162,17 @@ def check_password():
 # --- Main App ---
 def main():
     st.set_page_config(
-        page_title="מחולל סיכומי פגישות",
+        page_title="מחולל סיכומי פגישות | 🧠",
         page_icon="🧠",
         layout="wide",
         initial_sidebar_state="collapsed"
     )
     
-    # CSS מעוצב משופר
+    # CSS מעוצב רגוע ומקצועי
     st.markdown("""
         <style>
             /* כיוון RTL וגופנים */
-            @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600&display=swap');
             
             * {
                 direction: rtl !important;
@@ -181,7 +181,7 @@ def main():
             
             /* רקע ראשי */
             .stApp {
-                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                background: #f8f9fa;
                 min-height: 100vh;
             }
             
@@ -196,24 +196,26 @@ def main():
             
             /* כותרת ראשית */
             h1[data-testid="stHeading"] {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                font-size: 3rem;
-                font-weight: 700;
+                color: #2c3e50;
+                font-size: 2.5rem;
+                font-weight: 600;
                 margin-bottom: 2rem;
                 text-align: center !important;
                 padding: 1rem;
+                border-bottom: 3px solid #5a8dee;
+                background: white;
+                border-radius: 10px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             }
             
             /* כותרות משנה */
             h2[data-testid="stHeading"], h3[data-testid="stHeading"] {
-                color: #2d3748;
-                font-weight: 600;
-                margin-top: 2rem;
+                color: #34495e;
+                font-weight: 500;
+                margin-top: 1.5rem;
                 margin-bottom: 1rem;
                 padding-right: 1rem;
-                border-right: 4px solid #667eea;
+                border-right: 3px solid #5a8dee;
             }
             
             /* אזור הטקסט */
@@ -222,77 +224,89 @@ def main():
                 direction: rtl !important;
                 font-size: 16px;
                 line-height: 1.8;
-                border-radius: 15px;
-                border: 2px solid #e2e8f0;
+                border-radius: 10px;
+                border: 1px solid #e0e6ed;
                 padding: 1rem;
                 background-color: #ffffff;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: all 0.3s ease;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                transition: all 0.2s ease;
             }
             
             .stTextArea > div > div > textarea:focus {
-                border-color: #667eea;
-                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                border-color: #5a8dee;
+                box-shadow: 0 0 0 2px rgba(90, 141, 238, 0.1);
             }
             
             /* כפתורים */
             .stButton > button, .stDownloadButton > button {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: #5a8dee;
                 color: white;
                 border: none;
-                border-radius: 25px;
-                padding: 0.75rem 2rem;
-                font-size: 1.1rem;
+                border-radius: 8px;
+                padding: 0.6rem 1.5rem;
+                font-size: 1rem;
                 font-weight: 500;
-                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-                transition: all 0.3s ease;
-                margin: 1rem 0;
+                box-shadow: 0 2px 4px rgba(90, 141, 238, 0.2);
+                transition: all 0.2s ease;
+                margin: 0.5rem 0;
                 width: auto;
-                min-width: 200px;
+                min-width: 180px;
             }
             
             .stButton > button:hover, .stDownloadButton > button:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+                background: #4a7dd7;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(90, 141, 238, 0.3);
+            }
+            
+            /* כפתור איפוס */
+            .stButton > button[key="reset_button"], .stButton > button[key="new_session"] {
+                background: #6c757d;
+                box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2);
+            }
+            
+            .stButton > button[key="reset_button"]:hover, .stButton > button[key="new_session"]:hover {
+                background: #5a6268;
+                box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
             }
             
             /* התראות */
             .stAlert {
-                border-radius: 15px;
-                padding: 1.5rem;
+                border-radius: 8px;
+                padding: 1.2rem;
                 margin: 1rem 0;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                background-color: #fff5f5;
-                border-right: 4px solid #fc8181;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                background-color: #fef5f1;
+                border-right: 3px solid #ff6b6b;
             }
             
             /* אזהרה */
             .stWarning {
-                background-color: #fffaf0;
-                border-right: 4px solid #f6ad55;
+                background-color: #fff8e1;
+                border-right: 3px solid #ffa726;
             }
             
             /* הצלחה */
             .stSuccess {
-                background-color: #f0fff4;
-                border-right: 4px solid #48bb78;
+                background-color: #e8f5e9;
+                border-right: 3px solid #66bb6a;
             }
             
             /* ספינר */
             .stSpinner > div {
                 text-align: center !important;
-                color: #667eea;
-                font-size: 1.1rem;
+                color: #5a8dee;
+                font-size: 1rem;
             }
             
             /* תיבת הסיכום */
             .summary-box {
                 background: white;
-                border-radius: 15px;
-                padding: 2rem;
+                border-radius: 10px;
+                padding: 1.5rem;
                 margin: 1rem 0;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-                border: 1px solid #e2e8f0;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                border: 1px solid #e0e6ed;
                 line-height: 1.8;
                 font-size: 16px;
                 position: relative;
@@ -304,39 +318,40 @@ def main():
                 position: absolute;
                 top: 0;
                 right: 0;
-                width: 4px;
+                width: 3px;
                 height: 100%;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: #5a8dee;
             }
             
             /* כרטיסיות */
             .step-card {
                 background: white;
-                border-radius: 15px;
-                padding: 1.5rem;
+                border-radius: 10px;
+                padding: 1.2rem;
                 margin: 1rem 0;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                border-right: 3px solid #667eea;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+                border-right: 3px solid #5a8dee;
             }
             
             /* מספור שלבים */
             .step-number {
                 display: inline-block;
-                width: 40px;
-                height: 40px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                width: 35px;
+                height: 35px;
+                background: #5a8dee;
                 color: white;
                 border-radius: 50%;
                 text-align: center;
-                line-height: 40px;
-                font-weight: bold;
+                line-height: 35px;
+                font-weight: 500;
                 margin-left: 10px;
+                font-size: 1.1rem;
             }
             
             /* אייקונים */
             .icon {
-                font-size: 1.5rem;
-                margin-left: 10px;
+                font-size: 1.3rem;
+                margin: 0 8px;
                 vertical-align: middle;
             }
             
@@ -344,7 +359,7 @@ def main():
             @keyframes fadeIn {
                 from {
                     opacity: 0;
-                    transform: translateY(20px);
+                    transform: translateY(10px);
                 }
                 to {
                     opacity: 1;
@@ -353,7 +368,13 @@ def main():
             }
             
             .main > div {
-                animation: fadeIn 0.5s ease-out;
+                animation: fadeIn 0.3s ease-out;
+            }
+            
+            /* אפקט hover לאייקונים */
+            a:hover img {
+                transform: scale(1.05);
+                filter: brightness(1.1);
             }
             
             /* רספונסיב */
@@ -366,6 +387,15 @@ def main():
                     width: 100%;
                     margin: 0.5rem 0;
                 }
+                
+                .footer a {
+                    display: block;
+                    margin: 10px 0;
+                }
+                
+                .footer .divider {
+                    display: none;
+                }
             }
         </style>
     """, unsafe_allow_html=True)
@@ -373,8 +403,9 @@ def main():
     # כותרת עם אייקון
     st.markdown("""
         <h1 style="text-align: center;">
-            <span class="icon">📝</span>
+            <span class="icon">🧠</span>
             מחולל סיכומי פגישות טיפוליות
+            <span class="icon">📝</span>
         </h1>
     """, unsafe_allow_html=True)
 
@@ -390,11 +421,11 @@ def main():
 
     # אזהרת פרטיות מעוצבת
     st.markdown("""
-        <div class="stAlert" style="background-color: #fff5f5; border-right: 4px solid #fc8181;">
-            <h4 style="color: #c53030; margin-bottom: 0.5rem;">
+        <div class="stAlert" style="background-color: #fef5f1; border-right: 3px solid #ff6b6b;">
+            <h4 style="color: #c0392b; margin-bottom: 0.5rem; font-weight: 500;">
                 ⚠️ אזהרת פרטיות חשובה
             </h4>
-            <p style="color: #742a2a; margin: 0;">
+            <p style="color: #7f8c8d; margin: 0; font-size: 15px;">
                 נא <strong>לא</strong> להזין מידע אישי מזהה על מטופלים שעלול לחשוף את זהותם.<br>
                 מומלץ להשתמש בראשי תיבות, שמות בדויים או תיאורים כלליים.
             </p>
@@ -404,7 +435,7 @@ def main():
     # שלב 1 - הזנת רשימות
     st.markdown("""
         <div class="step-card">
-            <h3>
+            <h3 style="color: #34495e; font-weight: 500;">
                 <span class="step-number">1</span>
                 הזיני רשימות מהפגישה
             </h3>
@@ -433,7 +464,7 @@ def main():
                 st.warning("⚠️ אנא הזיני רשימות כלשהן מהפגישה.")
                 st.stop()
 
-            with st.spinner(f"🔄 מעבד את הרשימות ומכין סיכום נרטיבי באמצעות {model_name_for_display}... אנא המתיני."):
+            with st.spinner(f"🔄 מעבדת את הרשימות ומכינה סיכום נרטיבי באמצעות {model_name_for_display}... אנא המתיני."):
                 narrative_summary = get_narrative_summary_from_gemini(gemini_api_key, session_notes_natural)
 
             if not narrative_summary:
@@ -443,7 +474,7 @@ def main():
             # שלב 2 - הצגת הסיכום
             st.markdown("""
                 <div class="step-card" style="margin-top: 2rem;">
-                    <h3>
+                    <h3 style="color: #34495e; font-weight: 500;">
                         <span class="step-number">2</span>
                         סיכום הפגישה הנרטיבי
                     </h3>
@@ -453,109 +484,3 @@ def main():
             st.markdown(f"""
                 <div class="summary-box">
                     {narrative_summary.replace('\n', '<br>')}
-                </div>
-            """, unsafe_allow_html=True)
-
-            # שלב 3 - הורדת הקובץ
-            st.markdown("""
-                <div class="step-card" style="margin-top: 2rem;">
-                    <h3>
-                        <span class="step-number">3</span>
-                        הורד סיכום כקובץ
-                    </h3>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            template_file = "patient_template.docx"
-
-            if not os.path.exists(template_file):
-                st.error(f"❌ שגיאה: קובץ התבנית DOCX '{template_file}' לא נמצא.")
-                st.info(f"💡 אנא צרי קובץ '{template_file}' פשוט באותה תיקייה, לדוגמה עם כותרת ומציין מקום יחיד כמו {{{{narrative_summary}}}}.")
-                st.stop()
-
-            try:
-                doc = DocxTemplate(template_file)
-                context = {
-                    "narrative_summary": narrative_summary
-                }
-                doc.render(context)
-
-                bio = BytesIO()
-                doc.save(bio)
-                bio.seek(0)
-                
-                # יצירת שם קובץ
-                first_words = " ".join(session_notes_natural.split()[:3]).replace('"', '').replace("'", "")
-                doc_filename = f"סיכום_פגישה_{first_words.replace(' ', '_')}.docx" if first_words else "סיכום_פגישה.docx"
-
-                col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
-                with col2:
-                    st.download_button(
-                        label="📥 הורידי סיכום פגישה (DOCX)",
-                        data=bio,
-                        file_name=doc_filename,
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        use_container_width=True
-                    )
-                with col3:
-                    if st.button("🔄 התחילי מחדש", key="new_session", use_container_width=True):
-                        st.rerun()
-                
-                st.success("✅ המסמך הופק בהצלחה ומוכן להורדה!")
-
-            except Exception as e:
-                st.error(f"❌ שגיאה ביצירת קובץ DOCX: {e}")
-                st.error(f"הטקסט שנוסה להטמיע בתבנית: {narrative_summary[:200]}...")
-            
-
-    # פוטר עם פרטי קשר
-    st.markdown("""
-        <div style="margin-top: 4rem; padding: 2rem; text-align: center;">
-            <p style="font-size: 1.3rem; color: #4a5568; margin-bottom: 2rem;">
-                 פותח על ידי יהודה יונגשטיין עבור אנשי מקצוע בתחום הטיפול
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    # איקונים של מייל ולינקדאין
-    col1, col2, col3 = st.columns([2, 1, 2])
-    with col2:
-        subcol1, subcol2 = st.columns(2, gap="small")
-        with subcol1:
-            # URL of the image
-            image_url = "https://img.icons8.com/small/256/new-post.png"
-            # Mail URL
-            mail_url = "mailto:yehudayu@gmail.com"
-            st.markdown(f"""
-                <div style="text-align: center;">
-                    <a href='{mail_url}' style="text-decoration: none;">
-                        <img src='{image_url}' width='50' height='50' style="transition: transform 0.3s ease; border-radius: 10px;">
-                    </a>
-                </div>
-            """, unsafe_allow_html=True)
-            
-        with subcol2:
-            # URL of the image
-            image_url = "https://img.icons8.com/small/256/linkedin.png"
-            # LinkedIn URL
-            linkedin_url = "https://www.linkedin.com/in/yehuda-yungstein/"
-            st.markdown(f"""
-                <div style="text-align: center;">
-                    <a href='{linkedin_url}' target='_blank' style="text-decoration: none;">
-                        <img src='{image_url}' width='50' height='50' style="transition: transform 0.3s ease; border-radius: 10px;">
-                    </a>
-                </div>
-            """, unsafe_allow_html=True)
-    
-    # כותרת תחתונה
-    st.markdown("""
-        <div style="text-align: center; margin-top: 2rem; padding: 1rem;">
-            <p style="font-size: 0.9rem; color: #718096;">
-                © 2025 | נבנה עם -Streamlit
-            </p>
-        </div>
-    """, unsafe_allow_html=True)
-   
-
-if __name__ == "__main__":
-    main()
