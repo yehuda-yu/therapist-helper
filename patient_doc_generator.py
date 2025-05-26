@@ -217,8 +217,7 @@ def main():
             st.stop()
 
         st.subheader("2. סיכום הפגישה הנרטיבי")
-        st.markdown(f"<div dir='rtl' style='text-align: right; border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9;'>{narrative_summary.replace('\n', '<br>')}</div>", unsafe_allow_html=True)
-
+        st.markdown(f"<div dir='rtl' style='color: #333333; text-align: right; border: 1px solid #ccc; padding: 10px; border-radius: 5px; background-color: #f9f9f9;'>{narrative_summary.replace('\n', '<br>')}</div>", unsafe_allow_html=True)
 
         st.subheader("3. הורד סיכום כקובץ DOCX")
         template_file = "patient_template.docx" # This should be your new simple template
