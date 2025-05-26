@@ -417,7 +417,7 @@ def main():
         placeholder="לדוגמה: פגישה עם א.ב., דיברנו על החרדות מהעבודה החדשה..."
     )
 
-    model_name_for_display = "Gemini 1.5 Pro"
+    model_name_for_display = "Gemini 2.5 Pro"
 
     # כפתור יצירת סיכום וכפתור איפוס
     col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
@@ -432,7 +432,7 @@ def main():
                 st.warning("⚠️ אנא הזיני רשימות כלשהן מהפגישה.")
                 st.stop()
 
-            with st.spinner(f"🔄 מעבדת את הרשימות ומכינה סיכום נרטיבי באמצעות {model_name_for_display}... אנא המתיני."):
+            with st.spinner(f"🔄 מעבד את הרשימות ומכין סיכום נרטיבי באמצעות {model_name_for_display}... אנא המתיני."):
                 narrative_summary = get_narrative_summary_from_gemini(gemini_api_key, session_notes_natural)
 
             if not narrative_summary:
