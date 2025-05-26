@@ -551,7 +551,7 @@ def main():
     st.markdown("""
         <div style="text-align: center; margin-top: 2rem; padding: 1rem;">
             <p style="font-size: 0.9rem; color: #718096;">
-                © 2024 | נבנה עם -Streamlit
+                © 2025 | נבנה עם -Streamlit
             </p>
         </div>
     """, unsafe_allow_html=True)
