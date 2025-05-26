@@ -481,6 +481,6 @@ def main():
                 </div>
             """, unsafe_allow_html=True)
             
-            st.markdown(f"""
+            st.markdown("""
                 <div class="summary-box">
                     {narrative_summary.replace('\n', '<br>')}
