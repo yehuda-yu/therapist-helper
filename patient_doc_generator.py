@@ -410,7 +410,7 @@ def main():
         </div>
     """, unsafe_allow_html=True)
     
-                session_notes_natural = st.text_area(
+    session_notes_natural = st.text_area(
         "תארי את פרטי הפגישה, נקודות עיקריות, התרשמויות והחלטות:",
         height=300,
         key="session_input_area",
