@@ -18,7 +18,7 @@ def get_narrative_summary_from_gemini(api_key: str, user_input_text: str) -> str
     client = genai.Client(api_key=api_key)
 
     # Using the model name from your latest snippet
-    model_name = "gemini-1.5-flash-preview-0514" # Updated to the latest model you mentioned
+    model_name = "gemini-2.0-flash" # Updated to the latest model you mentioned
 
     key_topics_to_cover = [
         "פרטי המטופל (גיל, מצב משפחתי, רקע רלוונטי)",
