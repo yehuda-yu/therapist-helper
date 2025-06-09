@@ -7,18 +7,17 @@ from docxtpl import DocxTemplate
 import os
 import datetime # For dynamic year in footer
 
-# --- Gemini API Function (corrected argument for generate_content_stream) ---
-# --- Gemini API Function (Improved Prompt & Examples) ---
+
 # --- Gemini API Function (Revised for Narrative Summary) ---
 def get_narrative_summary_from_gemini(api_key: str, user_input_text: str) -> str:
     """
     Processes natural language patient session notes using Gemini API
     and returns a flowing narrative summary in Hebrew.
     """
-    client = genai.Client(api_key=api_key)
+    # 1. Configure the API key globally for the genai module
+    genai.configure(api_key=api_key) 
 
-    # Using the model name from your latest snippet
-    model_name = "gemini-2.0-flash" # Updated to the latest model you mentioned
+    model_name = "gemini-1.5-flash-preview-0514" 
 
     key_topics_to_cover = [
         "פרטי המטופל (גיל, מצב משפחתי, רקע רלוונטי)",
@@ -93,43 +92,18 @@ def get_narrative_summary_from_gemini(api_key: str, user_input_text: str) -> str
 
 אנא עבד את הרשימות הבאות של המטפל וצור את סיכום הפגישה הנרטיבי:
 """
-
-    generate_content_config_object = genai_types.GenerateContentConfig(
-        temperature=0.6, 
-        response_mime_type="text/plain", 
-        system_instruction=[ # Changed from system_instruction to system_setting for some SDK versions.
-                             # Verify correct parameter for your genai SDK version. If error, try system_instruction.
-             genai_types.Part.from_text(text=system_prompt_text),
-        ],
-    )
-    # The parameter might be `system_instruction` or `system_setting` depending on the library version
-    # Let's assume it's `system_instruction` based on prior context, but be mindful of this.
-    # If `system_instruction` doesn't work as a direct kwarg in GenerateContentConfig,
-    # it should be part of the `generation_config` dictionary.
-    # However, the previous code had it as a direct kwarg, so I'll keep it for consistency with that structure,
-    # but it's often `generation_config={"system_instruction": ...}`.
-    # Let's use the structure client.models.generate_content which might be more robust:
     
     generation_config = genai.types.GenerationConfig(
         temperature=0.6,
         response_mime_type="text/plain"
     )
     
-    # The system_instruction should ideally be part of the `contents` list as the first message from "system" role,
-    # or passed via a specific parameter in the generate_content call if supported by the model/SDK version.
-    # For Gemini, system instructions are typically passed as a top-level parameter or as part of the initial messages.
-    # Given the existing structure, let's adapt `contents` and `generate_content_stream`
-
-    # Revised contents structure to potentially include system prompt if model supports it this way:
-    # Some models prefer system prompt as a separate `system_instruction` field in GenerationConfig or client call.
-    # Others expect it as the first message. Let's try with GenerateContentConfig.
-
     full_response_text = ""
     try:
-        # Corrected usage for system instruction with GenerateContentConfig
-        model_instance = client.get_generative_model(
+        # 3. Instantiate GenerativeModel directly, passing system_instruction here
+        model_instance = genai.GenerativeModel(
             model_name=model_name,
-            system_instruction=system_prompt_text # Pass system prompt here
+            system_instruction=system_prompt_text 
         )
         stream = model_instance.generate_content(
             contents=contents, # User and model examples, then current user input
@@ -144,6 +118,15 @@ def get_narrative_summary_from_gemini(api_key: str, user_input_text: str) -> str
         if not full_response_text.strip():
             st.warning("ה-API של Gemini החזיר תגובה ריקה. ייתכן שהקלט לא היה מספיק מפורט או שיש בעיה זמנית.")
             return "" 
+
+        return full_response_text.strip()
+
+    except Exception as e:
+        error_msg = f"שגיאה בקריאה ל-Gemini API: {type(e).__name__} - {e}. מודל: {model_name}."
+        st.error(error_msg)
+        if hasattr(e, 'response') and e.response:
+            st.error(f"פרטי תגובת API: {e.response}")
+        return ""
 
         return full_response_text.strip()
 
