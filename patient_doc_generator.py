@@ -16,7 +16,7 @@ def get_narrative_summary_from_gemini(api_key: str, user_input_text: str) -> str
     # client = genai.Client(api_key=api_key) # REMOVE THIS LINE
 
     # Using the model name from your latest snippet
-    model_name = "gemini-1.5-flash-preview-0514"
+    model_name = "gemini-2.5-flash-preview-05-20"
 
     key_topics_to_cover = [
         "פרטי המטופל (גיל, מצב משפחתי, רקע רלוונטי)",
@@ -468,7 +468,7 @@ def main():
         placeholder="לדוגמה: פגישה עם א.ב., דיברנו על החרדות מהעבודה החדשה..."
     )
 
-    model_name_for_display = "Gemini 1.5 Flash" # עדכון שם התצוגה של המודל
+    model_name_for_display = "Gemini 2.5 Flash" # עדכון שם התצוגה של המודל
 
     col1, col2, col3, col4 = st.columns([0.5, 2, 2, 0.5]) # התאמת רוחב עמודות
     with col2:
