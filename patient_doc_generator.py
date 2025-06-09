@@ -31,7 +31,30 @@ def get_narrative_summary_from_gemini(api_key: str, user_input_text: str) -> str
         "ציפיות מהטיפול (אם צוין)"
     ]
 
-    # --- Enhanced Few-Shot Examples for Narrative ---
+    system_prompt_text = f"""
+אתה עוזר AI מומחה לכתיבת סיכומי פגישות טיפוליות עבור מטפלים רגשיים.
+המשימה שלך היא לקרוא את רשימות המטפל (שיינתנו בעברית) ולכתוב סיכום פגישה קוהרנטי ומקיף בעברית, בפסקאות רציפות.
+הסיכום צריך להיות כתוב בשפה מקצועית אך קריאה, כאילו נכתב על ידי המטפל עצמו.
+
+**מבנה ותוכן הסיכום:**
+על הסיכום לשלב באופן טבעי מידע מהתחומים הבאים לפי הסדר שלהם, ככל שהוא מופיע ברשימות המטפל:
+{', '.join(key_topics_to_cover)}
+
+**סגנון הכתיבה:**
+- כתוב בפסקאות רציפות, לא בנקודות או רשימות.
+- שמור על זרימה לוגית בין חלקי הסיכום.
+- השתמש בדוגמאות שניתנו לך כמודל לסגנון ולרמת הפירוט.
+- אם מידע מסוים חסר ברשימות המטפל, אל תמציא אותו. התמקד במה שסופק.
+- הימנע משימוש ישיר בכותרות סעיפים (כמו "S", "O", "A", "P") בתוך הטקסט הרציף.
+- זכור כי המבנה של הטקסט שלך צריך לעקוב אחרי השלבים שצירפתי ולא בהכרח לפי הסדר שהמשתמש העלה 
+
+**פלט:**
+הפלט שלך צריך להיות טקסט אחד רציף בעברית, המהווה את סיכום הפגישה.
+
+אנא עבד את הרשימות הבאות של המטפל וצור את סיכום הפגישה הנרטיבי:
+"""
+
+    # Enhanced Few-Shot Examples for Narrative
     contents = [
         genai_types.Content(
             role="user",
@@ -69,55 +92,31 @@ def get_narrative_summary_from_gemini(api_key: str, user_input_text: str) -> str
         ),
     ]
 
-    system_prompt_text = f"""
-אתה עוזר AI מומחה לכתיבת סיכומי פגישות טיפוליות עבור מטפלים רגשיים.
-המשימה שלך היא לקרוא את רשימות המטפל (שיינתנו בעברית) ולכתוב סיכום פגישה קוהרנטי ומקיף בעברית, בפסקאות רציפות.
-הסיכום צריך להיות כתוב בשפה מקצועית אך קריאה, כאילו נכתב על ידי המטפל עצמו.
-
-**מבנה ותוכן הסיכום:**
-על הסיכום לשלב באופן טבעי מידע מהתחומים הבאים לפי הסדר שלהם, ככל שהוא מופיע ברשימות המטפל:
-{', '.join(key_topics_to_cover)}
-
-**סגנון הכתיבה:**
-- כתוב בפסקאות רציפות, לא בנקודות או רשימות.
-- שמור על זרימה לוגית בין חלקי הסיכום.
-- השתמש בדוגמאות שניתנו לך כמודל לסגנון ולרמת הפירוט.
-- אם מידע מסוים חסר ברשימות המטפל, אל תמציא אותו. התמקד במה שסופק.
-- הימנע משימוש ישיר בכותרות סעיפים (כמו "S", "O", "A", "P") בתוך הטקסט הרציף.
-- זכור כי המבנה של הטקסט שלך צריך לעקוב אחרי השלבים שצירפתי ולא בהכרח לפי הסדר שהמשתמש העלה 
-
-**פלט:**
-הפלט שלך צריך להיות טקסט אחד רציף בעברית, המהווה את סיכום הפגישה.
-
-אנא עבד את הרשימות הבאות של המטפל וצור את סיכום הפגישה הנרטיבי:
-"""
-
-    generation_config = genai.types.GenerationConfig(
-        temperature=0.6,
-        response_mime_type="text/plain"
-    )
-    
     full_response_text = ""
     try:
-        # CORRECTED: Instantiate GenerativeModel directly
-        model_instance = genai.GenerativeModel(
-            model_name=model_name,
-            system_instruction=system_prompt_text, # Pass system prompt here
-            api_key=api_key # Pass API key here
+        # Use the correct method for the Google Generative AI SDK
+        response = client.models.generate_content(
+            model=model_name,
+            contents=contents,
+            config=genai_types.GenerateContentConfig(
+                temperature=0.6,
+                system_instruction=system_prompt_text,
+                response_mime_type="text/plain"
+            )
         )
-        stream = model_instance.generate_content(
-            contents=contents, # User and model examples, then current user input
-            generation_config=generation_config,
-            stream=True
-        )
-
-        for chunk in stream:
-            if chunk.text:
-                 full_response_text += chunk.text
+        
+        # Extract text from response
+        if hasattr(response, 'text'):
+            full_response_text = response.text
+        elif hasattr(response, 'candidates') and response.candidates:
+            # Handle response with candidates
+            candidate = response.candidates[0]
+            if hasattr(candidate, 'content') and candidate.content.parts:
+                full_response_text = candidate.content.parts[0].text
         
         if not full_response_text.strip():
             st.warning("ה-API של Gemini החזיר תגובה ריקה. ייתכן שהקלט לא היה מספיק מפורט או שיש בעיה זמנית.")
-            return "" 
+            return ""
 
         return full_response_text.strip()
 
