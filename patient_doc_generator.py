@@ -1,5 +1,6 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
+from google.genai import types as genai_types
 import json
 from io import BytesIO
 from docxtpl import DocxTemplate
